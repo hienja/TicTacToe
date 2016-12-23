@@ -3,6 +3,7 @@
 
 #include "stdafx.h"
 #include "TicTacToe.h"
+#include <windowsx.h>
 
 #define MAX_LOADSTRING 100
 
@@ -149,6 +150,29 @@ void DrawLine(HDC hdc, int x1, int x2, int y1, int y2)
 	LineTo(hdc, x2, y2);
 }
 
+int GetCellNumberFromPoint(HWND hwnd, int x, int y)
+{
+	POINT pt = { x, y };
+	RECT rc;
+	
+	if (GetGameBoardRect(hwnd, &rc))
+	{
+
+		if (PtInRect(&rc, pt))
+		{
+			x = pt.x - rc.left;
+			y = pt.y - rc.top;
+
+			int col = x / CELL_SIZE;
+			int row = y / CELL_SIZE;
+
+			return col + row * 3;
+		}
+	}
+
+	return -1;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -170,6 +194,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+	case WM_LBUTTONDOWN:
+		{
+			int xPos = GET_X_LPARAM(lParam);
+			int yPos = GET_Y_LPARAM(lParam);
+
+			int index = GetCellNumberFromPoint(hWnd, xPos, yPos);
+
+			HDC hdc = GetDC(hWnd);
+			if (hdc != NULL)
+			{
+				WCHAR temp[100];
+
+				wsprintf(temp, L"Index = %d", index);
+				TextOut(hdc, xPos, yPos, temp, lstrlen(temp));
+				ReleaseDC(hWnd, hdc);
+			}
+		}
+		break;
 	case WM_GETMINMAXINFO:
 		{
 			MINMAXINFO * pMinMax = (MINMAXINFO*)lParam;
