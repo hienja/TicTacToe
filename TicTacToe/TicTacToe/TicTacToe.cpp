@@ -121,6 +121,9 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
+
+const int CELL_SIZE = 100;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -142,12 +145,33 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
+	case WM_GETMINMAXINFO:
+		{
+			MINMAXINFO * pMinMax = (MINMAXINFO*)lParam;
+
+			pMinMax->ptMinTrackSize.x = CELL_SIZE * 5;
+			pMinMax->ptMinTrackSize.y = CELL_SIZE * 5;
+		}
+		break;
     case WM_PAINT:
         {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(hWnd, &ps);
             // TODO: Add any drawing code that uses hdc here...
+			RECT rc;
 
+			if (GetClientRect(hWnd, &rc)) 
+			{
+				int width = rc.right - rc.left;
+				int length = rc.bottom - rc.top;
+
+				int left = (width - CELL_SIZE * 3) / 2;
+				int top = (length - CELL_SIZE * 3) / 2;
+				int right = left + CELL_SIZE * 3;
+				int bottom = top + CELL_SIZE * 3;
+
+				Rectangle(hdc, left, top, right, bottom);
+			}
 
             EndPaint(hWnd, &ps);
         }
