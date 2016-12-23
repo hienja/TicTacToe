@@ -339,6 +339,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if(GetGameBoardRect(hWnd, &rc))
 			{
+				RECT rcClient;
+				
+				if (GetClientRect(hWnd, &rcClient))
+				{
+					const WCHAR szPlayer1[] = L"Player 1";
+					const WCHAR szPlayer2[] = L"Player 2";
+
+					//SetBkColor(hdc, RGB(128, 128, 128));
+					SetBkMode(hdc, TRANSPARENT);
+
+					SetTextColor(hdc, RGB(255, 0, 0));
+					TextOut(hdc, 16, 16, szPlayer1, ARRAYSIZE(szPlayer1));
+					SetTextColor(hdc, RGB(0, 0, 255));
+					TextOut(hdc, rcClient.right - 72, 16, szPlayer2, ARRAYSIZE(szPlayer2));
+				}
+
 				//Rectangle without border.
 				FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
 				//Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
