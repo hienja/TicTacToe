@@ -173,6 +173,31 @@ int GetCellNumberFromPoint(HWND hwnd, int x, int y)
 	return -1;
 }
 
+BOOL GetCellRect(HWND hWnd, int index, RECT * pRect)
+{
+	RECT rcBoard;
+	SetRectEmpty(pRect);
+
+	if (index < 0 || index > 8) 
+	{
+		return FALSE;
+	}
+
+	if (GetGameBoardRect(hWnd, &rcBoard))
+	{
+		int row = index / 3;
+		int col = index % 3;
+
+		pRect->left = rcBoard.left + col * CELL_SIZE + 1;
+		pRect->top = rcBoard.top + row * CELL_SIZE + 1;
+		pRect->right = pRect->left + CELL_SIZE - 1;
+		pRect->bottom = pRect->top + CELL_SIZE - 1;
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -208,6 +233,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				wsprintf(temp, L"Index = %d", index);
 				TextOut(hdc, xPos, yPos, temp, lstrlen(temp));
+
+				if (index != -1)
+				{
+					RECT rcCell;
+					if (GetCellRect(hWnd, index, &rcCell))
+					{
+						FillRect(hdc, &rcCell, (HBRUSH)GetStockObject(GRAY_BRUSH));
+					}
+				}
+
 				ReleaseDC(hWnd, hdc);
 			}
 		}
@@ -230,11 +265,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			if(GetGameBoardRect(hWnd, &rc))
 			{
 				//Rectangle without border.
-				//FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
-				Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+				FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+				//Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
 			}
 
-			for (int i = 0; i < 3; i++)
+			for (int i = 0; i < 4; i++)
 			{
 				//Draw Vertical Line
 				DrawLine(hdc, rc.left + CELL_SIZE * i, rc.left + CELL_SIZE * i, rc.top, rc.bottom);
