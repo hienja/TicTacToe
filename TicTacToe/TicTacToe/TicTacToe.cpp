@@ -126,6 +126,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 const int CELL_SIZE = 100;
 HBRUSH hb1, hb2;
 int playerTurn = 1;
+const int NRECT = 9;
+int gameBoard[NRECT];
 
 BOOL GetGameBoardRect(HWND hwnd, RECT * pRect)
 {
@@ -245,12 +247,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (index != -1)
 				{
 					RECT rcCell;
-					if (GetCellRect(hWnd, index, &rcCell))
+					if (GetCellRect(hWnd, index, &rcCell) && !gameBoard[index])
 					{
-						FillRect(hdc, &rcCell, playerTurn == 2 ? hb1: hb2);
+						gameBoard[index] = playerTurn;
+						FillRect(hdc, &rcCell, playerTurn == 1 ? hb1: hb2);
+						playerTurn = playerTurn == 2 ? 1 : 2;
 					}
 
-					playerTurn = playerTurn == 2 ? 1 : 2;
 				}
 
 				ReleaseDC(hWnd, hdc);
@@ -285,6 +288,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				DrawLine(hdc, rc.left + CELL_SIZE * i, rc.left + CELL_SIZE * i, rc.top, rc.bottom);
 				//Draw Horizontal Line
 				DrawLine(hdc, rc.left, rc.right, rc.top + CELL_SIZE * i, rc.top + CELL_SIZE * i);
+			}
+
+			RECT rcCell;
+			for (int i = 0; i < NRECT; i++)
+			{
+				if (GetCellRect(hWnd, i, &rcCell) && gameBoard[i])
+				{
+					FillRect(hdc, &rcCell, gameBoard[i] == 1 ? hb1 : hb2);
+				}
 			}
 
             EndPaint(hWnd, &ps);
