@@ -207,7 +207,7 @@ BOOL GetCellRect(HWND hWnd, int index, RECT * pRect)
 //Return 0-No Winner, 1-Player 1 wins, 2-Player 2 wins, 3-draw
 int GetWinner(int wins[3])
 {
-	int cells[] = { 0,1,2, 3,4,5, 6,7,8, 0,3,6, 1,4,7, 2,5,8, 0,4,8, 2,4,5 };
+	int cells[] = { 0,1,2, 3,4,5, 6,7,8, 0,3,6, 1,4,7, 2,5,8, 0,4,8, 2,4,6 };
 
 	for (int i = 0; i < ARRAYSIZE(cells); i += 3)
 	{
@@ -230,6 +230,40 @@ int GetWinner(int wins[3])
 	}
 
 	return 3;
+}
+
+void ShowTurn(HWND hwnd, HDC hdc)
+{
+	static const WCHAR szPlayer1[] = L"Player 1";
+	static const WCHAR szPlayer2[] = L"Player 2";
+	const WCHAR * pszTurnNext = playerTurn == 1 ? szPlayer1 : szPlayer2;
+
+	switch (winner)
+	{
+	case 0:
+		pszTurnNext = playerTurn == 1 ? szPlayer1 : szPlayer2;
+		break;
+	case 1:
+		pszTurnNext = L"Player 1 is the winner!";
+		break;
+	case 2:
+		pszTurnNext = L"Player 2 is the winner!";
+		break;
+	case 3:
+		pszTurnNext = L"It's a Draw!";
+		break;
+	}
+
+	RECT rc;
+
+	if (GetClientRect(hwnd, &rc))
+	{
+		rc.top = rc.bottom - 48;
+		FillRect(hdc, &rc, (HBRUSH)GetStockObject(GRAY_BRUSH));
+		SetTextColor(hdc, RGB(0, 0, 0));
+		SetBkMode(hdc, TRANSPARENT);
+		DrawText(hdc, pszTurnNext, lstrlen(pszTurnNext), &rc, DT_CENTER);
+	}
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -307,13 +341,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 						}
 						else if (winner == 3)
 						{
-							MessageBox(hWnd, L"No Winner this time.",
-								L"Is is a draw.", MB_OK | MB_ICONEXCLAMATION);
+							MessageBox(hWnd, L"No Winner this time!",
+								L"Is is a draw!", MB_OK | MB_ICONEXCLAMATION);
 						}
 						else if (winner == 0)
 						{
 							playerTurn = playerTurn == 2 ? 1 : 2;
 						}
+						ShowTurn(hWnd, hdc);
 					}
 
 				}
@@ -353,6 +388,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					TextOut(hdc, 16, 16, szPlayer1, ARRAYSIZE(szPlayer1));
 					SetTextColor(hdc, RGB(0, 0, 255));
 					TextOut(hdc, rcClient.right - 72, 16, szPlayer2, ARRAYSIZE(szPlayer2));
+
+					ShowTurn(hWnd, hdc);
 				}
 
 				//Rectangle without border.
