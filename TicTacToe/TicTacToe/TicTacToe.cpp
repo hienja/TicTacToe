@@ -128,6 +128,8 @@ HBRUSH hb1, hb2;
 int playerTurn = 1;
 const int NRECT = 9;
 int gameBoard[NRECT];
+int winner = 0;
+int wins[3];
 
 BOOL GetGameBoardRect(HWND hwnd, RECT * pRect)
 {
@@ -202,6 +204,34 @@ BOOL GetCellRect(HWND hWnd, int index, RECT * pRect)
 	return FALSE;
 }
 
+//Return 0-No Winner, 1-Player 1 wins, 2-Player 2 wins, 3-draw
+int GetWinner(int wins[3])
+{
+	int cells[] = { 0,1,2, 3,4,5, 6,7,8, 0,3,6, 1,4,7, 2,5,8, 0,4,8, 2,4,5 };
+
+	for (int i = 0; i < ARRAYSIZE(cells); i += 3)
+	{
+		if (gameBoard[cells[i]] == gameBoard[cells[i + 1]] && gameBoard[cells[i]] == gameBoard[cells[i + 2]] && gameBoard[cells[i]])
+		{
+			wins[0] = cells[i];
+			wins[1] = cells[i + 1];
+			wins[2] = cells[i + 2];
+
+			return gameBoard[cells[i]];
+		}
+	}
+
+	for (int i = 0; i < ARRAYSIZE(gameBoard); i++)
+	{
+		if (gameBoard[i] == 0)
+		{
+			return 0;
+		}
+	}
+
+	return 3;
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
@@ -234,15 +264,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			int xPos = GET_X_LPARAM(lParam);
 			int yPos = GET_Y_LPARAM(lParam);
 
+			//Only handle click is game hasn't ended
+			if (playerTurn == 0) {
+				break;
+			}
 			int index = GetCellNumberFromPoint(hWnd, xPos, yPos);
 
 			HDC hdc = GetDC(hWnd);
 			if (hdc != NULL)
 			{
-				WCHAR temp[100];
+				//WCHAR temp[100];
 
-				wsprintf(temp, L"Index = %d", index);
-				TextOut(hdc, xPos, yPos, temp, lstrlen(temp));
+				//wsprintf(temp, L"Index = %d", index);
+				//TextOut(hdc, xPos, yPos, temp, lstrlen(temp));
 
 				if (index != -1)
 				{
@@ -251,7 +285,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					{
 						gameBoard[index] = playerTurn;
 						FillRect(hdc, &rcCell, playerTurn == 1 ? hb1: hb2);
-						playerTurn = playerTurn == 2 ? 1 : 2;
+
+						winner = GetWinner(wins);
+						if (winner == 1 || winner == 2) {
+							MessageBox(hWnd, winner == 1 ? L"Player 1 is the Winner!": L"Player 2 is the winner!",
+								L"You Win!", MB_OK | MB_ICONINFORMATION);
+							playerTurn = 0;
+						}
+						else if (winner == 3)
+						{
+							MessageBox(hWnd, L"No Winner this time.",
+								L"Is is a draw.", MB_OK | MB_ICONEXCLAMATION);
+						}
+						else if (winner == 0)
+						{
+							playerTurn = playerTurn == 2 ? 1 : 2;
+						}
 					}
 
 				}
