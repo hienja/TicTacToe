@@ -75,7 +75,8 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
     wcex.hInstance      = hInstance;
     wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_TICTACTOE));
     wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
-    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    //wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+	wcex.hbrBackground	= (HBRUSH)(GetStockObject(GRAY_BRUSH));
     wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_TICTACTOE);
     wcex.lpszClassName  = szWindowClass;
     wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -121,8 +122,32 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
-
 const int CELL_SIZE = 100;
+
+BOOL GetGameBoardRect(HWND hwnd, RECT * pRect)
+{
+	RECT rc;
+
+	if (GetClientRect(hwnd, &rc))
+	{
+		int width = rc.right - rc.left;
+		int length = rc.bottom - rc.top;
+
+		pRect->left = (width - CELL_SIZE * 3) / 2;
+		pRect->top = (length - CELL_SIZE * 3) / 2;
+		pRect->right = pRect->left + CELL_SIZE * 3;
+		pRect->bottom = pRect->top + CELL_SIZE * 3;
+
+		return TRUE;
+	}
+	return FALSE;
+}
+
+void DrawLine(HDC hdc, int x1, int x2, int y1, int y2)
+{
+	MoveToEx(hdc, x1, y1, NULL);
+	LineTo(hdc, x2, y2);
+}
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -160,17 +185,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             // TODO: Add any drawing code that uses hdc here...
 			RECT rc;
 
-			if (GetClientRect(hWnd, &rc)) 
+			if(GetGameBoardRect(hWnd, &rc))
 			{
-				int width = rc.right - rc.left;
-				int length = rc.bottom - rc.top;
+				//Rectangle without border.
+				//FillRect(hdc, &rc, (HBRUSH)GetStockObject(WHITE_BRUSH));
+				Rectangle(hdc, rc.left, rc.top, rc.right, rc.bottom);
+			}
 
-				int left = (width - CELL_SIZE * 3) / 2;
-				int top = (length - CELL_SIZE * 3) / 2;
-				int right = left + CELL_SIZE * 3;
-				int bottom = top + CELL_SIZE * 3;
-
-				Rectangle(hdc, left, top, right, bottom);
+			for (int i = 0; i < 3; i++)
+			{
+				//Draw Vertical Line
+				DrawLine(hdc, rc.left + CELL_SIZE * i, rc.left + CELL_SIZE * i, rc.top, rc.bottom);
+				//Draw Horizontal Line
+				DrawLine(hdc, rc.left, rc.right, rc.top + CELL_SIZE * i, rc.top + CELL_SIZE * i);
 			}
 
             EndPaint(hWnd, &ps);
