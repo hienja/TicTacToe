@@ -269,13 +269,24 @@ void ShowTurn(HWND hwnd, HDC hdc)
 
 void DrawIconCentered(HDC hdc,RECT * pRect, HICON hIcon)
 {
-	const int ICON_WIDTH = 32;
-	const int ICON_HEIGHT = 32;
+	const int ICON_WIDTH = GetSystemMetrics(SM_CXICON);
+	const int ICON_HEIGHT = GetSystemMetrics(SM_CYICON);
 	if (pRect) 
 	{
 		int left = pRect->left + (pRect->right - pRect->left - ICON_WIDTH) / 2;
 		int top = pRect->top + (pRect->bottom - pRect->top - ICON_HEIGHT) / 2;
 		DrawIcon(hdc, left, top, hIcon);
+	}
+}
+
+void ShowWinner(HWND hwnd, HDC hdc)
+{
+	RECT rcWin;
+	for (int i = 0; i < 3; i++)
+	{
+		GetCellRect(hwnd, wins[i], &rcWin);
+		FillRect(hdc, &rcWin, CreateSolidBrush(RGB(255, 255, 0)));
+		DrawIconCentered(hdc, &rcWin, winner == 1 ? hIcon1 : hIcon2);
 	}
 }
 
@@ -352,6 +363,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 						winner = GetWinner(wins);
 						if (winner == 1 || winner == 2) {
+							ShowWinner(hWnd, hdc);
+
 							MessageBox(hWnd, winner == 1 ? L"Player 1 is the Winner!": L"Player 2 is the winner!",
 								L"You Win!", MB_OK | MB_ICONINFORMATION);
 							playerTurn = 0;
@@ -403,8 +416,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 					SetTextColor(hdc, RGB(255, 0, 0));
 					TextOut(hdc, 16, 16, szPlayer1, ARRAYSIZE(szPlayer1));
+					DrawIcon(hdc, 24, 40, hIcon1);
+
 					SetTextColor(hdc, RGB(0, 0, 255));
 					TextOut(hdc, rcClient.right - 72, 16, szPlayer2, ARRAYSIZE(szPlayer2));
+					DrawIcon(hdc, rcClient.right - 64, 40, hIcon2);
 
 					ShowTurn(hWnd, hdc);
 				}
@@ -430,6 +446,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					//FillRect(hdc, &rcCell, gameBoard[i] == 1 ? hb1 : hb2);
 					DrawIconCentered(hdc, &rcCell, gameBoard[i] == 1 ? hIcon1 : hIcon2);
 				}
+			}
+
+			if (winner == 1 || winner == 2)
+			{
+				ShowWinner(hWnd, hdc);
 			}
 
             EndPaint(hWnd, &ps);
