@@ -163,6 +163,9 @@
     <ResourceCompile Include="TicTacToe.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\..\..\Downloads\harrypotter1.ico" />
+    <Image Include="..\..\..\..\Downloads\harrypotter4.ico" />
+    <Image Include="..\..\..\..\Downloads\harrypotter5.ico" />
     <Image Include="small.ico" />
     <Image Include="TicTacToe.ico" />
   </ItemGroup>

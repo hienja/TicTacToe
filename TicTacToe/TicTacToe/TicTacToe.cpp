@@ -124,7 +124,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 //
 const int CELL_SIZE = 100;
-HBRUSH hb1, hb2;
+//HBRUSH hb1, hb2;
+HICON hIcon1, hIcon2;
 int playerTurn = 1;
 const int NRECT = 9;
 int gameBoard[NRECT];
@@ -266,14 +267,29 @@ void ShowTurn(HWND hwnd, HDC hdc)
 	}
 }
 
+void DrawIconCentered(HDC hdc,RECT * pRect, HICON hIcon)
+{
+	const int ICON_WIDTH = 32;
+	const int ICON_HEIGHT = 32;
+	if (pRect) 
+	{
+		int left = pRect->left + (pRect->right - pRect->left - ICON_WIDTH) / 2;
+		int top = pRect->top + (pRect->bottom - pRect->top - ICON_HEIGHT) / 2;
+		DrawIcon(hdc, left, top, hIcon);
+	}
+}
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
 	case WM_CREATE:
 		{
-			hb1 = CreateSolidBrush(RGB(255, 0, 0));
-			hb2 = CreateSolidBrush(RGB(0, 0, 255));
+			//hb1 = CreateSolidBrush(RGB(255, 0, 0));
+			//hb2 = CreateSolidBrush(RGB(0, 0, 255));
+
+			hIcon1 = LoadIcon(hInst, MAKEINTRESOURCE(IDI_PLAYER1));
+			hIcon2 = LoadIcon(hInst, MAKEINTRESOURCE(IDI_PLAYER2));
 		}
 		break;
     case WM_COMMAND:
@@ -331,7 +347,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					if (GetCellRect(hWnd, index, &rcCell) && !gameBoard[index])
 					{
 						gameBoard[index] = playerTurn;
-						FillRect(hdc, &rcCell, playerTurn == 1 ? hb1: hb2);
+						//FillRect(hdc, &rcCell, playerTurn == 1 ? hb1: hb2);
+						DrawIconCentered(hdc, &rcCell, playerTurn == 1 ? hIcon1 : hIcon2);
 
 						winner = GetWinner(wins);
 						if (winner == 1 || winner == 2) {
@@ -410,7 +427,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			{
 				if (GetCellRect(hWnd, i, &rcCell) && gameBoard[i])
 				{
-					FillRect(hdc, &rcCell, gameBoard[i] == 1 ? hb1 : hb2);
+					//FillRect(hdc, &rcCell, gameBoard[i] == 1 ? hb1 : hb2);
+					DrawIconCentered(hdc, &rcCell, gameBoard[i] == 1 ? hIcon1 : hIcon2);
 				}
 			}
 
@@ -418,8 +436,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     case WM_DESTROY:
-		DeleteObject(hb1);
-		DeleteObject(hb2);
+		//DeleteObject(hb1);
+		//DeleteObject(hb2);
+		DestroyIcon(hIcon1);
+		DestroyIcon(hIcon2);
         PostQuitMessage(0);
         break;
     default:
